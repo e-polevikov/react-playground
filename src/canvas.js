@@ -4,14 +4,39 @@ import {Stage, Layer, Circle} from 'react-konva';
 const canvasWidth = 700;
 const canvasHeight = 350;
 const circleRadius = 20;
-const numberOfCircles = 10;
+const initialNumberOfCircles = 10;
+
+function checkIntersection(circles, randX, randY) {
+  let randomCircleIntersecsExisting = false;
+
+  for (let i = 0; i < circles.length; i++) {
+    let xDistance = (circles[i].x - randX) * (circles[i].x - randX);
+    let yDistance = (circles[i].y - randY) * (circles[i].y - randY);
+
+    if (xDistance + yDistance <= 4 * circleRadius * circleRadius) {
+      randomCircleIntersecsExisting = true;
+      break;
+    }
+  }
+
+  return randomCircleIntersecsExisting;
+}
 
 function generateCircles() {
-  return [...Array(numberOfCircles)].map((_, i) => ({
-    id: i.toString(),
-    x: Math.random() * canvasWidth,
-    y: Math.random() * canvasHeight
-  }));
+  let circles = [];
+  let numberOfGeneratedCircles = 0;
+
+  while (numberOfGeneratedCircles < initialNumberOfCircles) {
+    let randX = Math.random() * canvasWidth;
+    let randY = Math.random() * canvasHeight;
+
+    if (!checkIntersection(circles, randX, randY)) {
+      circles.push({id: numberOfGeneratedCircles.toString(), x: randX, y: randY});
+      numberOfGeneratedCircles += 1;
+    }
+  }
+
+  return circles;
 }
 
 const INITIAL_STATE = generateCircles();
