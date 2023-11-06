@@ -3,9 +3,11 @@ import {Stage, Layer, Circle} from 'react-konva';
 
 const canvasWidth = 700;
 const canvasHeight = 350;
+const circleRadius = 20;
+const numberOfCircles = 10;
 
 function generateCircles() {
-  return [...Array(10)].map((_, i) => ({
+  return [...Array(numberOfCircles)].map((_, i) => ({
     id: i.toString(),
     x: Math.random() * canvasWidth,
     y: Math.random() * canvasHeight
@@ -38,16 +40,16 @@ function Canvas() {
                 id={circle.id}
                 x={circle.x}
                 y={circle.y}
-                radius={20}
+                radius={circleRadius}
                 fill='red'
-                draggable
+                // draggable
               />
             ))}
           </Layer>
         </Stage>
       </div>
       <div>
-        <button onClick={moveCirclesHandler}>Move Circles Randomly</button>
+        <button onClick={moveCirclesHandler}>Сдвинуть частицы</button>
       </div>
     </>
   );

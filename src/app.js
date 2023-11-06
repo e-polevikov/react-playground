@@ -3,7 +3,7 @@ import Canvas from './canvas.js';
 function App() {
   return (
     <>
-      <h1>React Playground</h1>
+      <h2>Эксперимент по сворачиванию белка</h2>
       <Canvas/>
     </>
   );
