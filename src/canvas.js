@@ -1,16 +1,16 @@
 import React from 'react';
 import {Stage, Layer, Circle} from 'react-konva';
 
-const canvasWidth = window.innerWidth;
+const canvasWidth = window.innerWidth * 0.6;
 const canvasHeight = window.innerHeight * 0.7;
 const circleRadius = 20;
-const initialNumberOfCircles = 10;
+const initialNumberOfCircles = 15;
 
 function calculateEnergy(circle1, circle2) {
   let xDist = Math.pow((circle1.x - circle2.x), 2);
   let yDist = Math.pow((circle1.y - circle2.y), 2);
   let totalDist = Math.sqrt(xDist + yDist);
-  let energy = 4 * (1 / Math.pow(totalDist, 12) - 1 / Math.pow(totalDist, 6));
+  let energy = Math.pow(10, 10) * 4 * (1 / Math.pow(totalDist, 12) - 1 / Math.pow(totalDist, 6));
   return energy;
 }
 
@@ -23,7 +23,7 @@ function calculateFullEnergy(circles) {
     }
   }
 
-  return fullEnergy;
+  return Math.round(fullEnergy);
 }
 
 function checkIntersection(circles, randX, randY, circleId) {
@@ -43,7 +43,17 @@ function checkIntersection(circles, randX, randY, circleId) {
     }
   }
 
-  return circleIntersecsExisting;
+  let circleIntersectsCanvas = false;
+
+  if (randX - circleRadius < 0.0 || randX + circleRadius >= canvasWidth) {
+    circleIntersectsCanvas = true;
+  }
+
+  if (randY - circleRadius < 0.0 || randY + circleRadius >= canvasHeight) {
+    circleIntersectsCanvas = true;
+  }
+
+  return circleIntersecsExisting || circleIntersectsCanvas;
 }
 
 function generateCircles() {
@@ -72,30 +82,61 @@ function Canvas() {
   const [fullEnergy, setFullEnergy] = React.useState(calculateFullEnergy(circles));
 
   const moveCirclesHandler = (e) => {
-    setCircles(
-      circles.map((circle) => {
-        let circleIsMoved = false;
+    for (let i = 0; i < 50; i++) {
+      moveCirclesWrapper();
+    }
+  }
 
-        while (!circleIsMoved) {
-          let randX = circle.x + (Math.random() - 0.5) * 10;
-          let randY = circle.y + (Math.random() - 0.5) * 10;
-          let currentCircleId = Number(circle.id);
+  const moveCirclesWrapper = (e) => {
+    let circlesCopy = JSON.parse(JSON.stringify(circles));
 
-          if (!checkIntersection(circles, randX, randY, currentCircleId)) {
-            circle.x = randX;
-            circle.y = randY;
-            circleIsMoved = true;
-          }
+    circlesCopy.map((circle) => {
+      let circleIsMoved = false;
+      let numAttempsToMove = 0;
+      let maxNumAttemptstoMove = 10;
+      let currentX = circle.x;
+      let currentY = circle.y;
+
+      while (!circleIsMoved && numAttempsToMove < maxNumAttemptstoMove) {
+        let randX = circle.x + (Math.random() - 0.5) * 10;
+        let randY = circle.y + (Math.random() - 0.5) * 10;
+        let currentCircleId = Number(circle.id);
+
+        if (!checkIntersection(circlesCopy, randX, randY, currentCircleId)) {
+          circle.x = randX;
+          circle.y = randY;
+          circleIsMoved = true;
         }
-        
-        setFullEnergy(calculateFullEnergy(circles));
-        return circle;
-      })
-    );
+
+        numAttempsToMove += 1;
+      }
+
+      if (calculateFullEnergy(circlesCopy) > calculateFullEnergy(circles)) {
+        if (Math.random() < 0.985) {
+          circle.x = currentX;
+          circle.y = currentY;
+        }
+      }
+      
+      return circle;
+    });
+
+    for (let i = 0; i < circles.length; i++) {
+      circles[i] = circlesCopy[i];
+    }
+
+    setCircles(circles);
+    setFullEnergy(calculateFullEnergy(circles));
   };
 
   return (
     <>
+      <div>
+        <button onClick={moveCirclesHandler}>Сдвинуть частицы</button>
+      </div>
+      <div>
+        Энергия взаимодействия: {fullEnergy}
+      </div>
       <div className='stage'>
         <Stage width={canvasWidth} height={canvasHeight}>
           <Layer>
@@ -112,12 +153,6 @@ function Canvas() {
             ))}
           </Layer>
         </Stage>
-      </div>
-      <div>
-        <button onClick={moveCirclesHandler}>Сдвинуть частицы</button>
-      </div>
-      <div>
-        Энергия взаимодействия: {fullEnergy}
       </div>
     </>
   );
