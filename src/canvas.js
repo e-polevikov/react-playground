@@ -1,10 +1,30 @@
 import React from 'react';
 import {Stage, Layer, Circle} from 'react-konva';
 
-const canvasWidth = 700;
-const canvasHeight = 350;
-const circleRadius = 30;
-const initialNumberOfCircles = 15;
+const canvasWidth = window.innerWidth;
+const canvasHeight = window.innerHeight * 0.7;
+const circleRadius = 20;
+const initialNumberOfCircles = 10;
+
+function calculateEnergy(circle1, circle2) {
+  let xDist = Math.pow((circle1.x - circle2.x), 2);
+  let yDist = Math.pow((circle1.y - circle2.y), 2);
+  let totalDist = Math.sqrt(xDist + yDist);
+  let energy = 4 * (1 / Math.pow(totalDist, 12) - 1 / Math.pow(totalDist, 6));
+  return energy;
+}
+
+function calculateFullEnergy(circles) {
+  let fullEnergy = 0.0;
+
+  for (let i = 0; i < circles.length - 1; i++) {
+    for (let j = i + 1; j < circles.length; j++) {
+      fullEnergy += calculateEnergy(circles[i], circles[j]);
+    }
+  }
+
+  return fullEnergy;
+}
 
 function checkIntersection(circles, randX, randY, circleId) {
   let circleIntersecsExisting = false;
@@ -47,10 +67,9 @@ function generateCircles() {
   return circles;
 }
 
-const INITIAL_STATE = generateCircles();
-
 function Canvas() {
-  const [circles, setCircles] = React.useState(INITIAL_STATE);
+  const [circles, setCircles] = React.useState(generateCircles());
+  const [fullEnergy, setFullEnergy] = React.useState(calculateFullEnergy(circles));
 
   const moveCirclesHandler = (e) => {
     setCircles(
@@ -68,7 +87,8 @@ function Canvas() {
             circleIsMoved = true;
           }
         }
-
+        
+        setFullEnergy(calculateFullEnergy(circles));
         return circle;
       })
     );
@@ -95,6 +115,9 @@ function Canvas() {
       </div>
       <div>
         <button onClick={moveCirclesHandler}>Сдвинуть частицы</button>
+      </div>
+      <div>
+        Энергия взаимодействия: {fullEnergy}
       </div>
     </>
   );
