@@ -1,9 +1,10 @@
-import React from 'react';
+import { useState, useRef } from 'react';
 import {Stage, Layer, Circle} from 'react-konva';
 
-const canvasWidth = window.innerWidth * 0.6;
-const canvasHeight = window.innerHeight * 0.7;
-const circleRadius = 20;
+const canvasWidth = window.innerWidth * 0.7;
+const canvasHeight = window.innerHeight * 0.8;
+
+const initialCircleRadius = 20;
 const initialNumberOfCircles = 15;
 
 function calculateEnergy(circle1, circle2) {
@@ -23,10 +24,10 @@ function calculateFullEnergy(circles) {
     }
   }
 
-  return Math.round(fullEnergy);
+  return fullEnergy;
 }
 
-function checkIntersection(circles, randX, randY, circleId) {
+function checkIntersection(circles, randX, randY, circleId, circleRadius) {
   let circleIntersecsExisting = false;
 
   for (let i = 0; i < circles.length; i++) {
@@ -56,16 +57,16 @@ function checkIntersection(circles, randX, randY, circleId) {
   return circleIntersecsExisting || circleIntersectsCanvas;
 }
 
-function generateCircles() {
+function generateCircles(circlesCount, circleRadius) {
   let circles = [];
   let numberOfGeneratedCircles = 0;
 
-  while (numberOfGeneratedCircles < initialNumberOfCircles) {
+  while (numberOfGeneratedCircles < circlesCount) {
     let randX = Math.random() * canvasWidth;
     let randY = Math.random() * canvasHeight;
     let generatedCircleId = numberOfGeneratedCircles + 1;
 
-    if (!checkIntersection(circles, randX, randY, generatedCircleId)) {
+    if (!checkIntersection(circles, randX, randY, generatedCircleId, circleRadius)) {
       circles.push({
         id: numberOfGeneratedCircles.toString(),
         x: randX, y: randY
@@ -78,16 +79,36 @@ function generateCircles() {
 }
 
 function Canvas() {
-  const [circles, setCircles] = React.useState(generateCircles());
-  const [fullEnergy, setFullEnergy] = React.useState(calculateFullEnergy(circles));
+  const [circleRadius, setCircleRadius] = useState(initialCircleRadius);
+  const [circlesCount, setCirclesCount] = useState(initialNumberOfCircles);
+  const [circles, setCircles] = useState(generateCircles(circlesCount, circleRadius));
+  const [fullEnergy, setFullEnergy] = useState(calculateFullEnergy(circles));
+  const intervalRef = useRef(null);
 
-  const moveCirclesHandler = (e) => {
-    for (let i = 0; i < 50; i++) {
+  function moveCirclesHandler() {
+    intervalRef.current = setInterval(() => {
       moveCirclesWrapper();
-    }
+    }, 10);
   }
 
-  const moveCirclesWrapper = (e) => {
+  function stopMoveHandler() {
+    clearInterval(intervalRef.current);
+  }
+
+  function newStateHandler() {
+    clearInterval(intervalRef.current);
+
+    let currentCircleRadius = document.getElementById('circle-radius').value;
+    let currentCirclesCount = document.getElementById('circles-count').value;
+
+    setCircleRadius(currentCircleRadius);
+    setCirclesCount(currentCirclesCount);
+
+    setCircles(generateCircles(currentCirclesCount, currentCircleRadius));
+    setFullEnergy(calculateFullEnergy(circles));
+  }
+
+  function moveCirclesWrapper() {
     let circlesCopy = JSON.parse(JSON.stringify(circles));
 
     circlesCopy.map((circle) => {
@@ -102,7 +123,7 @@ function Canvas() {
         let randY = circle.y + (Math.random() - 0.5) * 10;
         let currentCircleId = Number(circle.id);
 
-        if (!checkIntersection(circlesCopy, randX, randY, currentCircleId)) {
+        if (!checkIntersection(circlesCopy, randX, randY, currentCircleId, circleRadius)) {
           circle.x = randX;
           circle.y = randY;
           circleIsMoved = true;
@@ -131,11 +152,29 @@ function Canvas() {
 
   return (
     <>
-      <div>
-        <button onClick={moveCirclesHandler}>Сдвинуть частицы</button>
-      </div>
-      <div>
-        Энергия взаимодействия: {fullEnergy}
+      <h1>Эксперимент по сворачиванию белка</h1>
+      <div className='params-container'>
+        <label>Радиус частицы: </label>
+        <input id='circle-radius' type='number' defaultValue={initialCircleRadius}/>
+        <br/><br/>
+
+        <label>Количество частиц: </label>
+        <input id='circles-count' type='number' defaultValue={initialNumberOfCircles}/>
+        <br/><br/>
+
+        <button onClick={newStateHandler}>Обновить</button>
+
+        <br/>
+        <hr></hr>
+
+        <button onClick={moveCirclesHandler}>Старт</button>
+        <button onClick={stopMoveHandler}>Пауза</button>
+
+        <br/>
+
+        <p>Начальная энергия взаимодействия: ...</p>
+        <p>Минимальная энергия взаимодействия: ...</p>
+        <p>Энергия взаимодействия: {fullEnergy.toFixed(2)}</p>
       </div>
       <div className='stage'>
         <Stage width={canvasWidth} height={canvasHeight}>
@@ -148,7 +187,6 @@ function Canvas() {
                 y={circle.y}
                 radius={circleRadius}
                 fill='red'
-                // draggable
               />
             ))}
           </Layer>
