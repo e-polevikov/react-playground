@@ -7,6 +7,8 @@ const canvasHeight = window.innerHeight * 0.8;
 const initialCircleRadius = 20;
 const initialNumberOfCircles = 15;
 
+const initialP = 0.3;
+
 function calculateEnergy(circle1, circle2) {
   let xDist = Math.pow((circle1.x - circle2.x), 2);
   let yDist = Math.pow((circle1.y - circle2.y), 2);
@@ -81,6 +83,7 @@ function generateCircles(circlesCount, circleRadius) {
 function Canvas() {
   const [circleRadius, setCircleRadius] = useState(initialCircleRadius);
   const [circlesCount, setCirclesCount] = useState(initialNumberOfCircles);
+  const [p, setP] = useState(initialP);
   const [circles, setCircles] = useState(generateCircles(circlesCount, circleRadius));
   const [fullEnergy, setFullEnergy] = useState(calculateFullEnergy(circles));
   const intervalRef = useRef(null);
@@ -100,9 +103,11 @@ function Canvas() {
 
     let currentCircleRadius = document.getElementById('circle-radius').value;
     let currentCirclesCount = document.getElementById('circles-count').value;
+    let currentP = document.getElementById('circle-move-probability').value;
 
     setCircleRadius(currentCircleRadius);
     setCirclesCount(currentCirclesCount);
+    setP(currentP);
 
     setCircles(generateCircles(currentCirclesCount, currentCircleRadius));
     setFullEnergy(calculateFullEnergy(circles));
@@ -114,7 +119,7 @@ function Canvas() {
     circlesCopy.map((circle) => {
       let circleIsMoved = false;
       let numAttempsToMove = 0;
-      let maxNumAttemptstoMove = 10;
+      let maxNumAttemptstoMove = 5;
       let currentX = circle.x;
       let currentY = circle.y;
 
@@ -133,7 +138,7 @@ function Canvas() {
       }
 
       if (calculateFullEnergy(circlesCopy) > calculateFullEnergy(circles)) {
-        if (Math.random() < 0.985) {
+        if (Math.random() < 1 - p) {
           circle.x = currentX;
           circle.y = currentY;
         }
@@ -160,6 +165,10 @@ function Canvas() {
 
         <label>Количество частиц: </label>
         <input id='circles-count' type='number' defaultValue={initialNumberOfCircles}/>
+        <br/><br/>
+
+        <label>P: </label>
+        <input id='circle-move-probability' type='number' defaultValue={initialP}></input>
         <br/><br/>
 
         <button onClick={newStateHandler}>Обновить</button>
