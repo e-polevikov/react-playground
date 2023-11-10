@@ -9,7 +9,7 @@ const initialNumberOfCircles = 15;
 
 const initialP = 0.1;
 const iterationDelayMs = 10;
-const maxNumberOfAttemptsToMoveCircleRandomly = 10;
+const maxAttemptsToMoveCircleRandomly = 10;
 
 function calculateEnergy(circle1, circle2) {
   let xDist = Math.pow((circle1.x - circle2.x), 2);
@@ -125,7 +125,7 @@ function Canvas() {
       let currentX = circle.x;
       let currentY = circle.y;
 
-      while (!circleIsMoved && numAttempsToMove < maxNumberOfAttemptsToMoveCircleRandomly) {
+      while (!circleIsMoved && numAttempsToMove < maxAttemptsToMoveCircleRandomly) {
         let randX = circle.x + (Math.random() - 0.5) * 10;
         let randY = circle.y + (Math.random() - 0.5) * 10;
         let currentCircleId = Number(circle.id);
