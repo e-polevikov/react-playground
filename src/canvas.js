@@ -7,7 +7,9 @@ const canvasHeight = window.innerHeight * 0.8;
 const initialCircleRadius = 20;
 const initialNumberOfCircles = 15;
 
-const initialP = 0.3;
+const initialP = 0.1;
+const iterationDelayMs = 10;
+const maxNumberOfAttemptsToMoveCircleRandomly = 10;
 
 function calculateEnergy(circle1, circle2) {
   let xDist = Math.pow((circle1.x - circle2.x), 2);
@@ -30,7 +32,7 @@ function calculateFullEnergy(circles) {
 }
 
 function checkIntersection(circles, randX, randY, circleId, circleRadius) {
-  let circleIntersecsExisting = false;
+  let circleIntersectsExisting = false;
 
   for (let i = 0; i < circles.length; i++) {
     if (i === circleId) {
@@ -41,7 +43,7 @@ function checkIntersection(circles, randX, randY, circleId, circleRadius) {
     let yDistance = (circles[i].y - randY) * (circles[i].y - randY);
 
     if (xDistance + yDistance <= 4 * circleRadius * circleRadius) {
-      circleIntersecsExisting = true;
+      circleIntersectsExisting = true;
       break;
     }
   }
@@ -56,7 +58,7 @@ function checkIntersection(circles, randX, randY, circleId, circleRadius) {
     circleIntersectsCanvas = true;
   }
 
-  return circleIntersecsExisting || circleIntersectsCanvas;
+  return circleIntersectsExisting || circleIntersectsCanvas;
 }
 
 function generateCircles(circlesCount, circleRadius) {
@@ -85,13 +87,14 @@ function Canvas() {
   const [circlesCount, setCirclesCount] = useState(initialNumberOfCircles);
   const [p, setP] = useState(initialP);
   const [circles, setCircles] = useState(generateCircles(circlesCount, circleRadius));
+
   const [fullEnergy, setFullEnergy] = useState(calculateFullEnergy(circles));
   const intervalRef = useRef(null);
 
   function moveCirclesHandler() {
     intervalRef.current = setInterval(() => {
       moveCirclesWrapper();
-    }, 10);
+    }, iterationDelayMs);
   }
 
   function stopMoveHandler() {
@@ -119,11 +122,10 @@ function Canvas() {
     circlesCopy.map((circle) => {
       let circleIsMoved = false;
       let numAttempsToMove = 0;
-      let maxNumAttemptstoMove = 5;
       let currentX = circle.x;
       let currentY = circle.y;
 
-      while (!circleIsMoved && numAttempsToMove < maxNumAttemptstoMove) {
+      while (!circleIsMoved && numAttempsToMove < maxNumberOfAttemptsToMoveCircleRandomly) {
         let randX = circle.x + (Math.random() - 0.5) * 10;
         let randY = circle.y + (Math.random() - 0.5) * 10;
         let currentCircleId = Number(circle.id);
@@ -137,11 +139,11 @@ function Canvas() {
         numAttempsToMove += 1;
       }
 
-      if (calculateFullEnergy(circlesCopy) > calculateFullEnergy(circles)) {
-        if (Math.random() < 1 - p) {
-          circle.x = currentX;
-          circle.y = currentY;
-        }
+      if (calculateFullEnergy(circlesCopy) > calculateFullEnergy(circles)
+          && Math.random() < 1 - p
+      ) {
+        circle.x = currentX;
+        circle.y = currentY;
       }
       
       return circle;
