@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import {Stage, Layer, Circle} from 'react-konva';
 
 const stageWidth = window.innerWidth * 0.7;
@@ -85,10 +85,12 @@ function generateCells(numOfCells, cellRadius) {
 function ProteinFolding() {
   const [cellRadius, setCellRadius] = useState(initialCellRadius);
   const [cellsCount, setCellsCount] = useState(initialNumberOfCells);
-  const [p, setP] = useState(initialP);
   const [cells, setCells] = useState(generateCells(cellsCount, cellRadius));
+  
+  const [p, setP] = useState(initialP);
 
   const [totalEnergy, setTotalEnergy] = useState(calculateTotalEnergy(cells));
+  const [minTotalEnergy, setMinTotalEnergy] = useState(0.0);
   const intervalRef = useRef(null);
 
   function startProteingFolding() {
@@ -104,9 +106,9 @@ function ProteinFolding() {
   function generateNewCells() {
     clearInterval(intervalRef.current);
 
-    let currentCircleRadius = document.getElementById('circle-radius').value;
-    let currentCirclesCount = document.getElementById('circles-count').value;
-    let currentP = document.getElementById('circle-move-probability').value;
+    let currentCircleRadius = document.getElementById('cell-radius').value;
+    let currentCirclesCount = document.getElementById('cells-count').value;
+    let currentP = document.getElementById('cell-move-probability').value;
 
     setCellRadius(currentCircleRadius);
     setCellsCount(currentCirclesCount);
@@ -114,6 +116,7 @@ function ProteinFolding() {
 
     setCells(generateCells(currentCirclesCount, currentCircleRadius));
     setTotalEnergy(calculateTotalEnergy(cells));
+    setMinTotalEnergy(0.0);
   }
 
   function moveCellsRandomly() {
@@ -157,21 +160,27 @@ function ProteinFolding() {
     setTotalEnergy(calculateTotalEnergy(cells));
   };
 
+  useEffect(() => {
+    if (totalEnergy < minTotalEnergy) {
+      setMinTotalEnergy(totalEnergy);
+    }
+  }, [totalEnergy, minTotalEnergy]);
+
   return (
     <>
       <h1>Эксперимент по сворачиванию белка</h1>
       
       <div className='params-container'>
         <label>Радиус частицы: </label>
-        <input id='circle-radius' type='number' defaultValue={initialCellRadius}/>
+        <input id='cell-radius' type='number' defaultValue={initialCellRadius}/>
         <br/><br/>
 
         <label>Количество частиц: </label>
-        <input id='circles-count' type='number' defaultValue={initialNumberOfCells}/>
+        <input id='cells-count' type='number' defaultValue={initialNumberOfCells}/>
         <br/><br/>
 
         <label>P: </label>
-        <input id='circle-move-probability' type='number' defaultValue={initialP}></input>
+        <input id='cell-move-probability' type='number' defaultValue={initialP}></input>
         <br/><br/>
 
         <button onClick={generateNewCells}>Обновить</button>
@@ -184,9 +193,8 @@ function ProteinFolding() {
 
         <br/>
 
-        <p>Начальная энергия взаимодействия: ...</p>
-        <p>Минимальная энергия взаимодействия: ...</p>
-        <p>Энергия взаимодействия: {totalEnergy.toFixed(2)}</p>
+        <p>Минимальная энергия взаимодействия: {minTotalEnergy.toFixed(2)}</p>
+        <p>Текущая энергия взаимодействия: {totalEnergy.toFixed(2)}</p>
       </div> 
 
       <div className='protein-stage'>
