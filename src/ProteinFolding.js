@@ -157,25 +157,10 @@ function ProteinFolding() {
     setTotalEnergy(calculateTotalEnergy(cells));
   };
 
-  function Protein() {
-    return (
-      <>
-        {cells.map((circle) => (
-          <Circle
-            key={circle.id}
-            id={circle.id}
-            x={circle.x}
-            y={circle.y}
-            radius={cellRadius}
-            fill={circle.color}
-          />
-        ))}
-      </>
-    );
-  }
-
-  function Params() {
-    return (
+  return (
+    <>
+      <h1>Эксперимент по сворачиванию белка</h1>
+      
       <div className='params-container'>
         <label>Радиус частицы: </label>
         <input id='circle-radius' type='number' defaultValue={initialCellRadius}/>
@@ -202,20 +187,21 @@ function ProteinFolding() {
         <p>Начальная энергия взаимодействия: ...</p>
         <p>Минимальная энергия взаимодействия: ...</p>
         <p>Энергия взаимодействия: {totalEnergy.toFixed(2)}</p>
-      </div>      
-    );
-  }
+      </div> 
 
-  return (
-    <>
-      <h1>Эксперимент по сворачиванию белка</h1>
-      
-      <Params/>
-
-      <div className='proteins-stage'>
+      <div className='protein-stage'>
         <Stage width={stageWidth} height={stageHeight}>
           <Layer>
-            <Protein/>
+            {cells.map((circle) => (
+              <Circle
+                key={circle.id}
+                id={circle.id}
+                x={circle.x}
+                y={circle.y}
+                radius={cellRadius}
+                fill={circle.color}
+              />
+            ))}
           </Layer>
         </Stage>
       </div>
