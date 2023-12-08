@@ -1,11 +1,3 @@
-.protein-stage {
-  border: solid black 1px;
-  float: right;
-  margin-right: 20px;
-}
-
-.params-container {
-  border: solid black 1px;
-  float: left;
-  padding: 10px;
+.hello-message {
+  color: lightcoral;
 }
