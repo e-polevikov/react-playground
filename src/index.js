@@ -4,9 +4,9 @@ import './index.css';
 
 function App() {
   return (
-    <>
+    <div>
       <h1 className='hello-message'>Hello!</h1>
-    </>
+    </div>
   );
 }
 
